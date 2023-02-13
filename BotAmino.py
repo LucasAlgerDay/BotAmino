@@ -8,8 +8,9 @@ from unicodedata import normalize
 from string import punctuation
 from random import choice
 # from datetime import datetime
-from aminofix import Client, SubClient, ACM, objects
+#from aminofix import Client, SubClient, ACM, objects
 #from amino import Client, SubClient, ACM, objects
+from aminoli import Client, SubClient, ACM, objects
 from uuid import uuid4
 from inspect import getfullargspec
 from urllib.request import urlopen
@@ -568,7 +569,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
             self.launch_all_message()
 
     def launch(self, passive: bool = False):
-        amino_list = self.sub_clients()
+        amino_list = self.sub_clients(size = 100)
         self.len_community = len(amino_list.comId)
         [Thread(target=self.threadLaunch, args=[commu, passive]).start() for commu in amino_list.comId]
 
@@ -578,6 +579,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         self.launch_events()
 
         self.launched = True
+
 
     def single_launch(self, commu, passive: bool = False):
         amino_list = self.sub_clients()
@@ -1272,31 +1274,31 @@ class Bot(SubClient, ACM):
                 pass
                 # print_exception(e)
 
-        def feature_chats():
-            try:
-                Thread(target=self.feature_chats).start()
-            except Exception as e:
-                print_exception(e)
+        # def feature_chats():
+        #     try:
+        #         Thread(target=self.feature_chats).start()
+        #     except Exception as e:
+        #         print_exception(e)
 
-        def feature_users():
-            try:
-                Thread(target=self.feature_users).start()
-            except Exception as e:
-                print_exception(e)
+        # def feature_users():
+        #     try:
+        #         Thread(target=self.feature_users).start()
+        #     except Exception as e:
+        #         print_exception(e)
 
-        feature_chats()
-        feature_users()
+        # feature_chats()
+        # feature_users()
 
         j = 0
         k = 0
         while self.marche:
             show_online()
-            if j >= 240:
-                feature_chats()
-                j = 0
-            if k >= 2880:
-                feature_users()
-                k = 0
+#             if j >= 240:
+#                 feature_chats()
+#                 j = 0
+#             if k >= 2880:
+#                 feature_users()
+#                 k = 0
 
             if self.activity:
                 upt_activity()
