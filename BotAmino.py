@@ -850,6 +850,9 @@ class Bot(SubClient, ACM):
         self.prefix = prefix
         self.update_file()
 
+    def get_prefix(self):
+        return self.prefix
+
     def set_welcome_message(self, message: str):
         xsss = message.replace('\\n', '\n')
         self.message_bvn = xsss.replace('"', '“')
@@ -1293,12 +1296,12 @@ class Bot(SubClient, ACM):
         k = 0
         while self.marche:
             show_online()
-#             if j >= 240:
-#                 feature_chats()
-#                 j = 0
-#             if k >= 2880:
-#                 feature_users()
-#                 k = 0
+            # if j >= 240:
+            #     feature_chats()
+            #     j = 0
+            # if k >= 2880:
+            #     feature_users()
+            #     k = 0
 
             if self.activity:
                 upt_activity()
