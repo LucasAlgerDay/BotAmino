@@ -280,8 +280,8 @@ class BannedWords:
 
 class Parameters:
     __slots__ = (
-                    "subClient", "chatId", "authorId", "author", "message", "messageId","level","reputation","json",
-                    "authorIcon", "comId", "replySrc", "replyMsg", "replyId", "info", "replys", "mentions","role", "replyinfo"
+                    "subClient", "chatId", "authorId", "author", "message", "messageId", "level", "reputation", "json",
+                    "authorIcon", "comId", "replySrc", "replyMsg", "replyId", "info", "replyAuthor", "mentions", "role", "replyinfo", "replyNickname", "replyIcon"
                  )
 
     def __init__(self, data: objects.Event, subClient):
@@ -313,10 +313,16 @@ class Parameters:
             self.replyId = data.message.extensions['replyMessage']['messageId']
 
 
-        self.replys = None
-        if data.message.extensions and data.message.extensions.get('replyMessage', None) and data.message.extensions['replyMessage'].get('content', None):
-            self.replys = data.message.extensions['replyMessage']['uid']
-        
+
+        self.replyAuthor = None
+        self.replyNickname = None
+        self.replyIcon = None
+        if data.message.extensions and data.message.extensions.get('replyMessage', None):
+            self.replyAuthor = data.message.extensions['replyMessage']['author']['uid']
+            self.replyNickname = data.message.extensions['replyMessage']['author']['nickname']
+            self.replyIcon = data.message.extensions['replyMessage']['author']['icon']
+
+
         self.replyinfo = None
         if data.message.extensions:
             self.replyinfo = data.message.extensions
