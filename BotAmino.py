@@ -832,7 +832,7 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": [], "goodbye_chat_message": [], "status_coin": True, "bot_name": self.bot_name}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
@@ -863,6 +863,11 @@ class Bot(SubClient, ACM):
         self.bot_names = bot_name
         self.update_file()
 
+    def unset_bot_name(self):
+        self.bot_names = self.bot_name
+        self.update_file()
+
+
     def set_welcome_message(self, message: str):
         self.message_bvn = message.replace('"', '“')
         self.update_file()
@@ -879,20 +884,20 @@ class Bot(SubClient, ACM):
         self.welcome_chat = ""
         self.update_file()
 
-    def set_welcome_chat_message(self, liste: list):
-        self.welcome_chat_message.extend(liste)
+    def set_welcome_chat_message(self, message: str):
+        self.welcome_chat_message = message
         self.update_file()
 
     def unset_welcome_chat_message(self):
-        self.welcome_chat_message = []
+        self.welcome_chat_message = ""
         self.update_file()
 
-    def set_goodbye_chat_message(self, liste: list):
-        self.goodbye_chat_message.extend(liste)
+    def set_goodbye_chat_message(self, message: str):
+        self.goodbye_chat_message = message
         self.update_file()
 
     def unset_goodbye_chat_message(self):
-        self.goodbye_chat_message = []
+        self.goodbye_chat_message = ""
         self.update_file()
 
     def set_welcom_status(self):
