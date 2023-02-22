@@ -377,7 +377,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         self.message_bvn_status = True
         self.show_online = True
         self.double_check = False
-        self.bot_name = bot_name
+        self.bot_name = "Bot"
 
     def tradlist(self, sub):
         sublist = []
@@ -390,7 +390,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         return sublist
 
     def add_community(self, comId):
-        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity)
+        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name)
 
     def get_community(self, comId):
         return self.communaute[comId]
@@ -545,7 +545,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 pass
 
     def threadLaunch(self, commu, passive: bool = False):
-        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive)
+        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name)
         slp(30)
         if passive:
             self.communaute[commu].passive()
@@ -752,12 +752,13 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
 
 
 class Bot(SubClient, ACM):
-    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False) -> None:
+    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False, bot_name: str = "Bot") -> None:
         self.client = client
         self.marche = True
         self.prefix = prefix
         self.bio_contents = bio
         self.activity = activity
+        self.bot_name = bot_name
 
         if isinstance(community, int):
             self.community_id = community
@@ -831,7 +832,7 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": [], "goodbye_chat_message": [], "status_coin": True, "bot_name": "Venti"}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": [], "goodbye_chat_message": [], "status_coin": True, "bot_name": self.bot_name}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
@@ -858,9 +859,12 @@ class Bot(SubClient, ACM):
         self.prefix = prefix
         self.update_file()
 
+    def set_bot_name(self, bot_name: str):
+        self.bot_names = bot_name
+        self.update_file()
+
     def set_welcome_message(self, message: str):
-        xsss = message.replace('\\n', '\n')
-        self.message_bvn = xsss.replace('"', '“')
+        self.message_bvn = message.replace('"', '“')
         self.update_file()
 
     def unset_welcome_message(self):
