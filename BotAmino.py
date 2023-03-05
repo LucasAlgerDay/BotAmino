@@ -820,6 +820,7 @@ class Bot(SubClient, ACM):
         self.goodbye_chat_message = self.get_file_info("goodbye_chat_message")
         self.status_coin = self.get_file_info("status_coin")
         self.bot_names = self.get_file_info("bot_name")
+        self.status_bot = self.get_file_info("status_bot")
         self.update_file()
         self.activity_status("on")
         new_users = self.get_all_users(start=0, size=30, type="recent")
@@ -832,11 +833,11 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
-                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names}
+                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot}
 
     def update_file(self, dict=None):
         if not dict:
@@ -866,7 +867,14 @@ class Bot(SubClient, ACM):
     def unset_bot_name(self):
         self.bot_names = self.bot_name
         self.update_file()
-
+    
+    def set_status_bots(self):
+        self.status_bot = True
+        self.update_file()
+    
+    def unset_status_bots(self):
+        self.status_bot = False
+        self.update_file()
 
     def set_welcome_message(self, message: str):
         self.message_bvn = message.replace('"', '“')
@@ -989,26 +997,6 @@ class Bot(SubClient, ACM):
 
     def is_agent(self, uid):
         return uid == self.community_leader_agent_id
-
-    def copy_bubble(self, chatId: str, replyId: str, comId: str = None):
-        if not comId:
-            comId = self.community_id
-        header = {
-            'Accept-Language': 'en-US',
-            'Content-Type': 'application/octet-stream',
-            'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 7.1; LG-UK495 Build/MRA58K; com.narvii.amino.master/3.3.33180)',
-            'Host': 'service.narvii.com',
-            'Accept-Encoding': 'gzip',
-            'Connection': 'Keep-Alive',
-        }
-        a = self.get_message_info(chatId=chatId, messageId=replyId).json["chatBubble"]["resourceUrl"]
-
-        with urlopen(a) as zipresp:
-            yo = zipresp.read()
-
-        response = requests.post(f"https://service.narvii.com/api/v1/x{comId}/s/chat/chat-bubble/templates/107147e9-05c5-405f-8553-af65d2823457/generate", data=yo, headers=header)
-        bid = loads(response.text)['chatBubble']['bubbleId']
-        response = requests.post(f"https://service.narvii.com/api/v1/{comId}/s/chat/chat-bubble/{bid}", data=yo, headers=header)
 
     def accept_role(self, rid: str = None):
         with suppress(Exception):
