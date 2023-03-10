@@ -821,6 +821,7 @@ class Bot(SubClient, ACM):
         self.status_coin = self.get_file_info("status_coin")
         self.bot_names = self.get_file_info("bot_name")
         self.status_bot = self.get_file_info("status_bot")
+        self.status_antiraid = self.get_file_info("antiraid")
         self.update_file()
         self.activity_status("on")
         new_users = self.get_all_users(start=0, size=30, type="recent")
@@ -833,11 +834,11 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True, "antiraid": True}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
-                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot}
+                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot, "antiraid": self.status_antiraid}
 
     def update_file(self, dict=None):
         if not dict:
@@ -874,6 +875,14 @@ class Bot(SubClient, ACM):
     
     def unset_status_bots(self):
         self.status_bot = False
+        self.update_file()
+
+    def set_status_antiraid(self):
+        self.status_antiraid = True
+        self.update_file()
+    
+    def unset_status_antiraid(self):
+        self.status_antiraid = False
         self.update_file()
 
     def set_welcome_message(self, message: str):
