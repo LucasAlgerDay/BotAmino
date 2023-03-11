@@ -341,25 +341,30 @@ class Parameters:
 
 
 class BotAmino(Command, Client, TimeOut, BannedWords):
-    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None):
+    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login"):
         Command.__init__(self)
         Client.__init__(self, deviceId=deviceId, certificatePath=certificatePath, proxies=proxies)
 
-        if email and password:
-            self.login(email=email, password=password)
-        elif sid:
-            self.login_sid(SID=sid)
+        if types.lower() == "login":
+            if email and password:
+                self.login(email=email, password=password, device = deviceId)
+            elif sid:
+                self.login_sid(SID=sid)
+            else:
+                try:
+                    with open(path_client, "r") as file_:
+                        para = file_.readlines()
+                    self.login(email=para[0].strip(), password=para[1].strip())
+                except FileNotFoundError:
+                    with open(path_client, 'w') as file_:
+                        file_.write('email\npassword')
+                    print("Please enter your email and password in the file client.txt")
+                    print("-----end-----")
+                    exit(1)
+        elif types.lower() == "logout":
+            self.logout()
         else:
-            try:
-                with open(path_client, "r") as file_:
-                    para = file_.readlines()
-                self.login(email=para[0].strip(), password=para[1].strip())
-            except FileNotFoundError:
-                with open(path_client, 'w') as file_:
-                    file_.write('email\npassword')
-                print("Please enter your email and password in the file client.txt")
-                print("-----end-----")
-                exit(1)
+            print("Only you can set 'login' or 'logout'")
 
         self.communaute = {}
         self.botId = self.userId
@@ -667,14 +672,11 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 self.time_user(args.authorId, self.wait)
                 Thread(target=self.execute, args=[args.message.lower(), args, "answer"]).start()
                 return
-        try:
-            @self.callbacks.event("on_text_message")
-            def on_text_message(data):
-                text_message(data)
-        except Exception:
-            @self.event("on_text_message")
-            def on_text_message(data):
-                text_message(data)
+
+        @self.event("on_text_message")
+        def on_text_message(data):
+            text_message(data)
+
 
     def launch_other_message(self):
         for type_name in ("on_strike_message", "on_voice_chat_not_answered",
@@ -683,67 +685,38 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                           "on_video_chat_not_declined", "on_voice_chat_start", "on_video_chat_start",
                           "on_voice_chat_end", "on_video_chat_end", "on_screen_room_start",
                           "on_screen_room_end", "on_avatar_chat_start", "on_avatar_chat_end"):
-            try:
-                @self.callbacks.event(type_name)
-                def on_other_message(data):
-                    self.message_analyse(data, "on_other")
-            except AttributeError:
-                @self.event(type_name)
-                def on_other_message(data):
-                    self.message_analyse(data, "on_other")
+            @self.event(type_name)
+            def on_other_message(data):
+                self.message_analyse(data, "on_other")
+
 
     def launch_all_message(self):
-        try:
-            for x in (self.chat_methods):
-                @self.event(self.chat_methods[x].__name__)
-                def on_all_message(data):
-                    self.message_analyse(data, "on_all")
-        except AttributeError:
-            for x in (self.callbacks.chat_methods):
-                @self.callbacks.event(self.callbacks.chat_methods[x].__name__)
-                def on_all_message(data):
-                    self.message_analyse(data, "on_all")
+        for x in (self.chat_methods):
+            @self.event(self.chat_methods[x].__name__)
+            def on_all_message(data):
+                self.message_analyse(data, "on_all")
+
 
     def launch_delete_message(self):
-        try:
-            @self.callbacks.event("on_delete_message")
-            def on_delete_message(data):
-                self.message_analyse(data, "on_delete")
-        except AttributeError:
-            @self.event("on_delete_message")
-            def on_delete_message(data):
-                self.message_analyse(data, "on_delete")
+        @self.event("on_delete_message")
+        def on_delete_message(data):
+            self.message_analyse(data, "on_delete")
 
     def launch_removed_message(self):
         for type_name in ("on_chat_removed_message", "on_text_message_force_removed", "on_text_message_removed_by_admin", "on_delete_message"):
-            try:
-                @self.callbacks.event(type_name)
-                def on_chat_removed(data):
-                    self.message_analyse(data, "on_remove")
-            except AttributeError:
-                @self.event(type_name)
-                def on_chat_removed(data):
-                    self.message_analyse(data, "on_remove")
+            @self.event(type_name)
+            def on_chat_removed(data):
+                self.message_analyse(data, "on_remove")
 
     def launch_on_member_join_chat(self):
-        try:
-            @self.callbacks.event("on_group_member_join")
-            def on_group_member_join(data):
-                self.on_member_event(data, "on_member_join_chat")
-        except AttributeError:
-            @self.event("on_group_member_join")
-            def on_group_member_join(data):
-                self.on_member_event(data, "on_member_join_chat")
+        @self.event("on_group_member_join")
+        def on_group_member_join(data):
+            self.on_member_event(data, "on_member_join_chat")
 
     def launch_on_member_leave_chat(self):
-        try:
-            @self.callbacks.event("on_group_member_leave")
-            def on_group_member_leave(data):
-                self.on_member_event(data, "on_member_leave_chat")
-        except AttributeError:
-            @self.event("on_group_member_leave")
-            def on_group_member_leave(data):
-                self.on_member_event(data, "on_member_leave_chat")
+        @self.event("on_group_member_leave")
+        def on_group_member_leave(data):
+            self.on_member_event(data, "on_member_leave_chat")
 
     def launch_on_live_user_join(self):
         @self.event("on_live_user_update")
