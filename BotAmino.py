@@ -341,7 +341,7 @@ class Parameters:
 
 
 class BotAmino(Command, Client, TimeOut, BannedWords):
-    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login"):
+    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login", barra_color: str = None, fondo_barra: str = None, color_texto: str = None, background_api: str = None, embed_image: str = None):
         Command.__init__(self)
         Client.__init__(self, deviceId=deviceId, certificatePath=certificatePath, proxies=proxies)
 
@@ -383,6 +383,11 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         self.show_online = True
         self.double_check = False
         self.bot_name = "Bot"
+        self.barra_color= "FFFFFF"
+        self.fondo_barra = "FFFFFF"
+        self.color_texto = "FFFFFF"
+        self.background_api = ""
+        self.embed_image = ""
 
     def tradlist(self, sub):
         sublist = []
@@ -395,7 +400,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         return sublist
 
     def add_community(self, comId):
-        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name)
+        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image)
 
     def get_community(self, comId):
         return self.communaute[comId]
@@ -550,7 +555,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 pass
 
     def threadLaunch(self, commu, passive: bool = False):
-        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name)
+        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image)
         slp(30)
         if passive:
             self.communaute[commu].passive()
@@ -672,10 +677,14 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 self.time_user(args.authorId, self.wait)
                 Thread(target=self.execute, args=[args.message.lower(), args, "answer"]).start()
                 return
-
-        @self.event("on_text_message")
-        def on_text_message(data):
-            text_message(data)
+        try:
+            @self.callbacks.event("on_text_message")
+            def on_text_message(data):
+                text_message(data)
+        except Exception:
+            @self.event("on_text_message")
+            def on_text_message(data):
+                text_message(data)
 
 
     def launch_other_message(self):
@@ -696,11 +705,6 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
             def on_all_message(data):
                 self.message_analyse(data, "on_all")
 
-
-    def launch_delete_message(self):
-        @self.event("on_delete_message")
-        def on_delete_message(data):
-            self.message_analyse(data, "on_delete")
 
     def launch_removed_message(self):
         for type_name in ("on_chat_removed_message", "on_text_message_force_removed", "on_text_message_removed_by_admin", "on_delete_message"):
@@ -725,23 +729,25 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
 
 
 class Bot(SubClient, ACM):
-    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False, bot_name: str = "Bot") -> None:
+    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False, bot_name: str = "Bot", barra_color: str = "FFFFFF", color_texto: str = "FFFFFF", fondo_barra: str = "FFFFFF", background_api: str = None, embed_image: str = None) -> None:
         self.client = client
         self.marche = True
         self.prefix = prefix
         self.bio_contents = bio
         self.activity = activity
         self.bot_name = bot_name
+        self.barra_color = barra_color
+        self.fondo_barra = fondo_barra
+        self.color_texto = color_texto
+        self.background_api = background_api
+        self.embed_image = embed_image
 
         if isinstance(community, int):
             self.community_id = community
             self.community = self.client.get_community_info(comId=self.community_id)
             self.community_amino_id = self.community.aminoId
         else:
-            self.community_amino_id = community
-            self.informations = self.client.get_from_code(f"http://aminoapps.com/c/{community}")
-            self.community_id = self.informations.json["extensions"]["community"]["ndcId"]
-            self.community = self.client.get_community_info(comId=self.community_id)
+            self.community = self.client.get_community_info(comId= community)
 
         self.community_name = self.community.name
 
@@ -795,6 +801,11 @@ class Bot(SubClient, ACM):
         self.bot_names = self.get_file_info("bot_name")
         self.status_bot = self.get_file_info("status_bot")
         self.status_antiraid = self.get_file_info("antiraid")
+        self.barra_colores = self.get_file_info("barra_color")
+        self.fondo_barras = self.get_file_info("fondo_barra")
+        self.color_textos = self.get_file_info("color_texto")
+        self.backgrounds_api = self.get_file_info("background_api")
+        self.embed_images = self.get_file_info("embed_image")
         self.update_file()
         self.activity_status("on")
         new_users = self.get_all_users(start=0, size=30, type="recent")
@@ -807,11 +818,11 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True, "antiraid": True}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True, "antiraid": False, "barra_color": self.barra_color, "fondo_barra": self.fondo_barra, "color_texto": self.color_texto, "background_api": self.background_api, "embed_image": self.embed_image}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
-                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot, "antiraid": self.status_antiraid}
+                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot, "antiraid": self.status_antiraid, "barra_color": self.barra_colores, "fondo_barra": self.fondo_barras, "color_texto": self.color_textos, "background_api": self.backgrounds_api, "embed_image": self.embed_images}
 
     def update_file(self, dict=None):
         if not dict:
@@ -840,6 +851,26 @@ class Bot(SubClient, ACM):
 
     def unset_bot_name(self):
         self.bot_names = self.bot_name
+        self.update_file()
+
+    def set_background_api(self, image: str):
+        self.backgrounds_api = image
+        self.update_file()
+
+    def set_embed_image(self, image: str):
+        self.embed_images = image
+        self.update_file()
+
+    def set_barra_color(self, color: str):
+        self.barra_colores = color
+        self.update_file()
+
+    def set_color_textos(self, color: str):
+        self.color_textos = color
+        self.update_file()
+
+    def set_fondo_barras(self, color: str):
+        self.fondo_barras = color
         self.update_file()
     
     def set_status_bots(self):
@@ -1204,15 +1235,15 @@ class Bot(SubClient, ACM):
         return self.get_public_chat_threads()
 
     def join_all_chat(self):
-        for elem in self.get_public_chat_threads(type="recommended", start=0, size=30).chatId:
+        for elem in self.get_public_chat_threads(type="recommended", start=0, size=100).chatId:
             with suppress(Exception):
-                time.sleep(2)
+                time.sleep(5)
                 self.join_chat(elem)
 
     def leave_all_chats(self):
         for elem in self.get_public_chat_threads(type="recommended", start=0, size=100).chatId:
             with suppress(Exception):
-                time.sleep(4)
+                time.sleep(5)
                 self.leave_chat(elem)
 
     def follow_user(self, uid):
@@ -1251,7 +1282,7 @@ class Bot(SubClient, ACM):
             timeEnd = timeNow + 300
             try:
                 self.send_active_obj(startTime=timeNow, endTime=timeEnd)
-            except Exception as activeError:
+            except:
                 pass
 
         def show_online():
@@ -1259,34 +1290,11 @@ class Bot(SubClient, ACM):
                 self.activity_status('on')
             except Exception as e:
                 pass
-                # print_exception(e)
-
-        # def feature_chats():
-        #     try:
-        #         Thread(target=self.feature_chats).start()
-        #     except Exception as e:
-        #         print_exception(e)
-
-        # def feature_users():
-        #     try:
-        #         Thread(target=self.feature_users).start()
-        #     except Exception as e:
-        #         print_exception(e)
-
-        # feature_chats()
-        # feature_users()
 
         j = 0
         k = 0
         while self.marche:
             show_online()
-            # if j >= 240:
-            #     feature_chats()
-            #     j = 0
-            # if k >= 2880:
-            #     feature_users()
-            #     k = 0
-
             if self.activity:
                 upt_activity()
 
