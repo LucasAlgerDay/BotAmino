@@ -365,7 +365,7 @@ class Parameters:
 
 
 class BotAmino(Command, Client, TimeOut, BannedWords):
-    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login", barra_color: str = None, fondo_barra: str = None, color_texto: str = None, background_api: str = None, embed_image: str = None):
+    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login", barra_color: str = None, fondo_barra: str = None, color_texto: str = None, background_api: str = None, embed_image: str = None, kemoji: list = [], autoanswer: str = None):
         Command.__init__(self)
         Client.__init__(self, deviceId=deviceId, certificatePath=certificatePath, proxies=proxies)
 
@@ -412,6 +412,8 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         self.color_texto = "FFFFFF"
         self.background_api = ""
         self.embed_image = ""
+        self.kemoji = []
+        self.autoanswer = "Hi"
 
     def tradlist(self, sub):
         sublist = []
@@ -424,7 +426,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         return sublist
 
     def add_community(self, comId):
-        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image)
+        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
 
     def get_community(self, comId):
         return self.communaute[comId]
@@ -579,7 +581,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 pass
 
     def threadLaunch(self, commu, passive: bool = False):
-        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image)
+        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
         slp(30)
         if passive:
             self.communaute[commu].passive()
@@ -776,7 +778,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
 
 
 class Bot(SubClient, ACM):
-    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False, bot_name: str = "Bot", barra_color: str = "FFFFFF", color_texto: str = "FFFFFF", fondo_barra: str = "FFFFFF", background_api: str = None, embed_image: str = None) -> None:
+    def __init__(self, client, community, prefix: str = "!", bio=None, activity=False, bot_name: str = "Bot", barra_color: str = "FFFFFF", color_texto: str = "FFFFFF", fondo_barra: str = "FFFFFF", background_api: str = None, embed_image: str = None, kemoji: list = [], autoanswer: str = None) -> None:
         self.client = client
         self.marche = True
         self.prefix = prefix
@@ -788,6 +790,8 @@ class Bot(SubClient, ACM):
         self.color_texto = color_texto
         self.background_api = background_api
         self.embed_image = embed_image
+        self.kemoji = kemoji
+        self.autoanswer = autoanswer
 
         if isinstance(community, int):
             self.community_id = community
@@ -853,6 +857,8 @@ class Bot(SubClient, ACM):
         self.color_textos = self.get_file_info("color_texto")
         self.backgrounds_api = self.get_file_info("background_api")
         self.embed_images = self.get_file_info("embed_image")
+        self.answers = self.get_file_info("answer")
+        self.kemojis = self.get_file_info("kemoji")
         self.update_file()
         self.activity_status("on")
         new_users = self.get_all_users(start=0, size=30, type="recent")
@@ -865,11 +871,11 @@ class Bot(SubClient, ACM):
             file.write(dumps(dict, sort_keys=False, indent=4))
 
     def create_dict(self):
-        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True, "antiraid": False, "barra_color": self.barra_color, "fondo_barra": self.fondo_barra, "color_texto": self.color_texto, "background_api": self.background_api, "embed_image": self.embed_image}
+        return {"welcome": "", "prefix": self.prefix, "welcome_chat": "", "locked_command": [], "favorite_users": [], "favorite_chats": [], "banned_words": [], "confesiones": "", "coin_channel": "",  "wel_status": True, "goodbye_status": True, "welcome_chat_message": "", "goodbye_chat_message": "", "status_coin": True, "bot_name": self.bot_name, "status_bot": True, "antiraid": False, "barra_color": self.barra_color, "fondo_barra": self.fondo_barra, "color_texto": self.color_texto, "background_api": self.background_api, "embed_image": self.embed_image,"answer": self.autoanswer, "kemoji": self.kemoji}
  
     def get_dict(self):
         return {"welcome": self.message_bvn, "prefix": self.prefix, "welcome_chat": self.welcome_chat, "locked_command": self.locked_command,
-                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot, "antiraid": self.status_antiraid, "barra_color": self.barra_colores, "fondo_barra": self.fondo_barras, "color_texto": self.color_textos, "background_api": self.backgrounds_api, "embed_image": self.embed_images}
+                "favorite_users": self.favorite_users, "favorite_chats": self.favorite_chats, "banned_words": self.banned_words,  "confesiones": self.confesiones, "coin_channel": self.coin_channel, "wel_status": self.welcom_status, "goodbye_status": self.goodbye_status, "welcome_chat_message": self.welcome_chat_message, "goodbye_chat_message": self.goodbye_chat_message, "status_coin": self.status_coin, "bot_name": self.bot_names, "status_bot": self.status_bot, "antiraid": self.status_antiraid, "barra_color": self.barra_colores, "fondo_barra": self.fondo_barras, "color_texto": self.color_textos, "background_api": self.backgrounds_api, "embed_image": self.embed_images,"answer": self.answers, "kemoji": self.kemojis}
 
     def update_file(self, dict=None):
         if not dict:
@@ -890,6 +896,25 @@ class Bot(SubClient, ACM):
 
     def set_prefix(self, prefix: str):
         self.prefix = prefix
+        self.update_file()
+
+    def delete_all_kemojis(self):
+        self.kemojis = [""]
+        self.update_file()
+
+    def delete_kemojis(self, kemoji: str):
+        if kemoji in self.kemojis:
+            self.kemojis.remove(kemoji)
+            self.update_file()
+
+    def set_kemojis(self, kemoji: str):
+        if "" in self.kemojis:
+            self.kemojis.remove("")
+        self.kemojis.append(kemoji)
+        self.update_file()
+
+    def set_bot_answer(self, answer: str):
+        self.answers = answer
         self.update_file()
 
     def set_bot_name(self, bot_name: str):
