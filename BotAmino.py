@@ -181,8 +181,8 @@ class Command:
             return command_funct
         return add_command
 
-    def on_delete(self, condition=None):
-        type = "on_delete"
+    def on_remove(self, condition=None):
+        type = "on_remove"
         self.add_categorie(type)
         self.add_condition(type)
         if callable(condition):
@@ -193,8 +193,32 @@ class Command:
             return command_funct
         return add_command
 
-    def on_remove(self, condition=None):
-        type = "on_remove"
+    def on_tip_coin(self, condition=None):
+        type = "on_tip_coin"
+        self.add_categorie(type)
+        self.add_condition(type)
+        if callable(condition):
+            self.conditions[type][type] = condition
+
+        def add_command(command_funct):
+            self.commands[type][type] = command_funct
+            return command_funct
+        return add_command
+    
+    def on_invite_chat(self, condition=None):
+        type = "on_invite_chat"
+        self.add_categorie(type)
+        self.add_condition(type)
+        if callable(condition):
+            self.conditions[type][type] = condition
+
+        def add_command(command_funct):
+            self.commands[type][type] = command_funct
+            return command_funct
+        return add_command
+    
+    def on_call_channel(self, condition=None):
+        type = "on_call_channel"
         self.add_categorie(type)
         self.add_condition(type)
         if callable(condition):
@@ -579,8 +603,14 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         if self.categorie_exist("on_remove"):
             self.launch_removed_message()
 
-        if self.categorie_exist("on_delete"):
-            self.launch_delete_message()
+        if self.categorie_exist("on_tip_coin"):
+            self.launch_tip_coin()
+
+        if self.categorie_exist("on_invite_chat"):
+            self.launch_chat_invited()
+
+        if self.categorie_exist("on_call_channel"):
+            self.launch_call_channel()
 
         if self.categorie_exist("on_all"):
             self.launch_all_message()
@@ -726,6 +756,23 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         @self.event("on_live_user_update")
         def on_live_user_update(data):
             self.on_member_event(data, "on_member_join_amino")
+
+    def launch_tip_coin(self):
+        @self.event("on_chat_tip")
+        def on_chat_tip(data):
+            self.on_member_event(data, "on_tip_coin")
+
+    def launch_call_channel(self):
+        @self.event("on_fetch_channel")
+        def on_fetch_channel(data):
+            self.on_member_event(data, "on_call_channel")
+
+
+    def launch_chat_invited(self):
+        for type_name in ("on_invite_message", "on_chat_invite"):
+            @self.event(type_name)
+            def on_invited(data):
+                self.message_analyse(data, "on_invite_chat")
 
 
 class Bot(SubClient, ACM):
@@ -1020,87 +1067,6 @@ class Bot(SubClient, ACM):
             return True
         return False
 
-    def get_staff(self, community):
-        if isinstance(community, int):
-            with suppress(Exception):
-                community = self.client.get_community_info(com_id=community)
-        else:
-            try:
-                informations = self.client.get_from_code(f"http://aminoapps.com/c/{community}")
-            except Exception:
-                return False
-
-            community_id = informations.json["extensions"]["community"]["ndcId"]
-            community = self.client.get_community_info(comId=community_id)
-
-        try:
-            community_staff_list = community.json["communityHeadList"]
-            community_staff = [elem["uid"] for elem in community_staff_list]
-        except Exception:
-            community_staff_list = ""
-
-        return community_staff
-
-    def get_user_id(self, name_or_id):
-        members = self.get_all_users(size=1).json['userProfileCount']
-        start = 0
-        lower_name = None
-
-        while start <= members:
-            users = self.get_all_users(start=start, size=100).json['userProfileList']
-            for user in users:
-                name = user['nickname']
-                uid = user['uid']
-
-                if name_or_id == name or name_or_id == uid:
-                    return (name, uid)
-                if not lower_name and name_or_id.lower() in name.lower():
-                    lower_name = (name, uid)
-            start += 100
-
-        return lower_name if lower_name else None
-
-    def ask_all_members(self, message, lvl: int = 20, type_bool: int = 1):
-        def ask(uid):
-            print(uid)
-            try:
-                self.start_chat(userId=[uid], message=message)
-            except Exception:
-                self.start_chat(userId=[uid], message=message)
-
-        size = self.get_all_users(start=0, size=1, type="recent").json['userProfileCount']
-        st = 0
-
-        while size > 0:
-            value = size
-            if value > 100:
-                value = 100
-            users = self.get_all_users(start=st, size=value)
-            if type_bool == 1:
-                [ask(user["uid"]) for user in users.json['userProfileList'] if user['level'] == lvl]
-            elif type_bool == 2:
-                [ask(user["uid"]) for user in users.json['userProfileList'] if user['level'] <= lvl]
-            elif type_bool == 3:
-                [ask(user["uid"]) for user in users.json['userProfileList'] if user['level'] >= lvl]
-            size -= 100
-            st += 100
-
-    def ask_amino_staff(self, message):
-        self.start_chat(userId=self.community_staff, message=message)
-
-    def get_chat_id(self, chat: str = None):
-        with suppress(Exception):
-            return self.get_from_code(f"http://aminoapps.com/c/{chat}").objectId
-
-        val = self.get_public_chat_threads()
-        for title, chat_id in zip(val.title, val.chatId):
-            if chat == title:
-                return chat_id
-
-        for title, chat_id in zip(val.title, val.chatId):
-            if chat.lower() in title.lower() or chat == chat_id:
-                return chat_id
-        return False
 
     def stop_instance(self):
         self.marche = False
