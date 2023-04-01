@@ -317,11 +317,11 @@ class Parameters:
         self.messageId = data.message.messageId
         self.authorIcon = data.message.author.icon
         self.role = data.message.author.role
-        try: self.level = data.message.json["author"]["level"]
+        try: self.level = data.message.author.level
         except: pass
         try: self.json = data.message.json
         except: pass
-        try: self.reputation = data.message.json["author"]["reputation"]
+        try: self.reputation = data.message.author.reputation
         except: pass
         self.comId = data.comId
 
@@ -436,9 +436,6 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
 
     def is_it_admin(self, uid):
         return uid in self.perms_list
-
-    def get_wallet_amount(self):
-        return self.get_wallet_info().totalCoins
 
     def generate_transaction_id(self):
         return str(uuid4())
@@ -1092,7 +1089,6 @@ class Bot(SubClient, ACM):
             return True
         return False
 
-
     def stop_instance(self):
         self.marche = False
 
@@ -1107,7 +1103,6 @@ class Bot(SubClient, ACM):
                 self.leave_chat(elem)
         self.client.leave_community(comId=self.community_id)
 
-
     def feature_chats(self):
         for elem in self.favorite_chats:
             with suppress(Exception):
@@ -1120,16 +1115,6 @@ class Bot(SubClient, ACM):
                 with suppress(Exception):
                     self.favorite(time=1, userId=elem)
 
-    def get_member_level(self, uid):
-        return self.get_user_info(userId=uid).level
-
-    def get_member_titles(self, uid):
-        with suppress(Exception):
-            return self.get_user_info(userId=uid).customTitles
-        return False
-
-    def get_wallet_amount(self):
-        return self.client.get_wallet_info().totalCoins
 
     def generate_transaction_id(self):
         return str(uuid4())
@@ -1231,7 +1216,7 @@ class Bot(SubClient, ACM):
         def show_online():
             try:
                 self.activity_status('on')
-            except Exception as e:
+            except:
                 pass
 
         j = 0
