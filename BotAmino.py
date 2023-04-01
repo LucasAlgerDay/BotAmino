@@ -378,11 +378,11 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 try:
                     with open(path_client, "r") as file_:
                         para = file_.readlines()
-                    self.login(email=para[0].strip(), password=para[1].strip())
+                    self.login(email=para[0].strip(), password=para[1].strip(), device=para[2].strip())
                 except FileNotFoundError:
                     with open(path_client, 'w') as file_:
-                        file_.write('email\npassword')
-                    print("Please enter your email and password in the file client.txt")
+                        file_.write('email\npassword\ndevice')
+                    print("Please enter your email, password and deviceId in the file client.txt")
                     print("-----end-----")
                     exit(1)
         elif types.lower() == "logout":
