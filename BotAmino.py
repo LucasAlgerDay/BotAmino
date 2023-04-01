@@ -365,7 +365,7 @@ class Parameters:
 
 
 class BotAmino(Command, Client, TimeOut, BannedWords):
-    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = None, types: str = "Login", barra_color: str = None, fondo_barra: str = None, color_texto: str = None, background_api: str = None, embed_image: str = None, kemoji: list = [], autoanswer: str = None):
+    def __init__(self, email: str = None, password: str = None, sid: str = None, deviceId: str = None, proxies: str = None, certificatePath: str = None, bot_name: str = "Bot", types: str = "Login", barra_color: str = "FFFFFF", fondo_barra: str = "FFFFFF", color_texto: str = "FFFFFF", background_api: str = "", embed_image: str = "", kemoji: list = [""], autoanswer: str = "Hi"):
         Command.__init__(self)
         Client.__init__(self, deviceId=deviceId, certificatePath=certificatePath, proxies=proxies)
 
@@ -406,14 +406,14 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         self.message_bvn_status = True
         self.show_online = True
         self.double_check = False
-        self.bot_name = "Bot"
-        self.barra_color= "FFFFFF"
-        self.fondo_barra = "FFFFFF"
-        self.color_texto = "FFFFFF"
-        self.background_api = ""
-        self.embed_image = ""
-        self.kemoji = []
-        self.autoanswer = "Hi"
+        self.bot_name = bot_name
+        self.barra_color= barra_color
+        self.fondo_barra = fondo_barra
+        self.color_texto = color_texto
+        self.background_api = background_api
+        self.embed_image = embed_image
+        self.kemoji = kemoji
+        self.autoanswer = autoanswer
 
     def tradlist(self, sub):
         sublist = []
@@ -426,7 +426,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
         return sublist
 
     def add_community(self, comId):
-        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
+        self.communaute[comId] = Bot(self, comId, self.prefix, self.bio, self.activity, self.bot_name, self.barra_color, self.color_texto,self.fondo_barra, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
 
     def get_community(self, comId):
         return self.communaute[comId]
@@ -578,7 +578,7 @@ class BotAmino(Command, Client, TimeOut, BannedWords):
                 pass
 
     def threadLaunch(self, commu, passive: bool = False):
-        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name, self.barra_color, self.fondo_barra, self.color_texto, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
+        self.communaute[commu] = Bot(self, commu, self.prefix, self.bio, passive, self.bot_name, self.barra_color,self.color_texto, self.fondo_barra, self.background_api, self.embed_image, self.kemoji, self.autoanswer)
         slp(30)
         if passive:
             self.communaute[commu].passive()
@@ -830,7 +830,6 @@ class Bot(SubClient, ACM):
 
         self.update_file(old_dict)
 
-        # self.subclient = SubClient(comId=self.community_id, profile=client.profile)
 
         self.banned_words = self.get_file_info("banned_words")
         self.locked_command = self.get_file_info("locked_command")
