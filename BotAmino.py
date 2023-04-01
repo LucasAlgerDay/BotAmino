@@ -1082,46 +1082,6 @@ class Bot(SubClient, ACM):
                 self.leave_chat(elem)
         self.client.leave_community(comId=self.community_id)
 
-    def check_new_member(self):
-        if not (self.message_bvn or self.welcome_chat):
-            return
-        new_list = self.get_all_users(start=0, size=25, type="recent")
-        new_member = [(elem["nickname"], elem["uid"]) for elem in new_list.json["userProfileList"]]
-        for elem in new_member:
-            name, uid = elem[0], elem[1]
-
-            val = self.get_wall_comments(userId=uid, sorting='newest').commentId
-
-            if not val and self.message_bvn:
-                with suppress(Exception):
-                    self.comment(message=self.message_bvn, userId=uid)
-
-            if not val and self.welcome_chat:
-                with suppress(Exception):
-                    self.send_message(chatId=self.welcome_chat, message=f"Welcome here ‎‏‎‏@{name}!‬‭", mentionUserIds=[uid])
-
-        new_users = self.get_all_users(start=0, size=30, type="recent")
-        self.new_users = [elem["uid"] for elem in new_users.json["userProfileList"]]
-
-    def welcome_new_member(self):
-        new_list = self.get_all_users(start=0, size=5, type="recent")
-        new_member = [(elem["nickname"], elem["uid"]) for elem in new_list.json["userProfileList"]]
-
-        for elem in new_member:
-            name, uid = elem[0], elem[1]
-
-            val = self.get_wall_comments(userId=uid, sorting='newest').commentId
-
-            if not val and uid not in self.new_users and self.message_bvn and self.message_bvn_status:
-                with suppress(Exception):
-                    self.comment(message=self.message_bvn, userId=uid)
-
-            if uid not in self.new_users and self.welcome_chat:
-                with suppress(Exception):
-                    self.send_message(chatId=self.welcome_chat, message=f"Welcome here ‎‏‎‏@{name}!‬‭", mentionUserIds=[uid])
-
-        new_users = self.get_all_users(start=0, size=30, type="recent")
-        self.new_users = [elem["uid"] for elem in new_users.json["userProfileList"]]
 
     def feature_chats(self):
         for elem in self.favorite_chats:
@@ -1197,9 +1157,6 @@ class Bot(SubClient, ACM):
     def join_screen_room(self, chatId: str, joinType: int = 1):
         self.client.join_video_chat_as_viewer(comId=self.community_id, chatId=chatId, joinType=joinType)
 
-    def get_chats(self):
-        return self.get_public_chat_threads()
-
     def join_all_chat(self):
         for elem in self.get_public_chat_threads(type="recommended", start=0, size=100).chatId:
             with suppress(Exception):
@@ -1212,11 +1169,6 @@ class Bot(SubClient, ACM):
                 time.sleep(5)
                 self.leave_chat(elem)
 
-    def follow_user(self, uid):
-        self.follow(userId=[uid])
-
-    def unfollow_user(self, uid):
-        self.unfollow(userId=uid)
 
     def add_title(self, uid: str, title: str, color: str = None):
         member = self.get_member_titles(uid)
